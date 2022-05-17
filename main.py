@@ -1,20 +1,26 @@
 # IMPORTS #
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ImageDraw
 import numpy as np
 from math import cos, sin, pi
 
+import os
+
 # CONSTANTES #
-k = 1
-k1 = .8
+k = .9
+k1 = .7
 
 # PARAMETRES #
-niteration = 2000
-npoints = 30
-r = 30
+niteration = 10
+npoints = 100
+r = 50
 
 # PRECALCULS #
 img = Image.open("img.jpg")
 img = ImageOps.grayscale(img)
+
+img.save("gray.jpg")
+
+center = (img.size[0]//2, img.size[1]//2)
 
 imgarr = np.asarray(img)
 
@@ -32,7 +38,7 @@ for i in range(len(forcex)):
             forcey[i,j] *= -k/l
 
 #Courbe initiale
-v = [(round(r*cos(theta)), round(r*sin(theta))) for theta in np.linspace(0, 2*pi, npoints+1)][:-1]
+v = [(round(center[0]+r*cos(theta)), round(center[1]+r*sin(theta))) for theta in np.linspace(0, 2*pi, npoints+1)][:-1]
 
 def inflate(v, forcex, forcey):
     "Applique la force de gonflement à chaque point de la courbe"
@@ -42,9 +48,9 @@ def inflate(v, forcex, forcey):
         fx, fy = forcex[y,x], forcey[y,x]
 
         #Calcul du vecteur normal
-        ny = v[(s+1)%l][0] - v[(s-1)%l][0]
+        ny = -(v[(s+1)%l][0] - v[(s-1)%l][0])
         nx = v[(s+1)%l][1] - v[(s-1)%l][1]
-        module = (nx**2 + ny**2)**.5
+        module = max(nx,ny)#(nx**2 + ny**2)**.5
         if module==0 :
             newv[s] = v[s]
             continue
@@ -57,7 +63,30 @@ def inflate(v, forcex, forcey):
 
     return newv
 
+def show(v,n):
+    img = Image.open("img.jpg")
+    draw = ImageDraw.Draw(img)
+    for i in range(len(v)-1):
+        draw.line(v[i] + v[i+1], fill = "red", width = 1)
+    
+    img.save("outs/res{}.jpg".format(n))
 
-for _ in range(niteration):
-    print(v)
+def fuse(v):
+    newv = [v[0]]
+    for i in range(1, len(v)):
+        if v[i] != newv[-1]:
+            newv.append(v[i])
+    return newv
+
+os.system("rm outs/*")
+
+saved = 0
+
+for n in range(niteration):
+    if n%1 == 0:
+        show(v,saved)
+        saved+=1
+    v = fuse(v)
     v = inflate(v, forcex, forcey)
+
+show(v,saved)
