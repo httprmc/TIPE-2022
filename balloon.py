@@ -1,8 +1,7 @@
 # IMPORTS #
-from cmath import phase
 from PIL import Image, ImageOps, ImageDraw, ImageFilter
 import numpy as np
-from cmath import cos, sin, pi, phase
+from math import cos, sin, pi
 
 import matplotlib.pyplot as plt
 
@@ -35,24 +34,19 @@ def inflate(v, forcex, forcey):
 
     return newv
 
-def fuse(v):
+def fusion(v):
     newv = [v[0]]
     for i in range(1, len(v)):
         if v[i] != newv[-1]:
             newv.append(v[i])
     return newv
 
-def to_polar(coo, center):
-    x,y = coo
-    comp = x-center[0] + (y-center[1])*1j
-    return abs(comp), phase(comp)
 
-
-def reorder(v, center):
-    return sorted(v, key = lambda x : to_polar(x, center)[1])
-
-
-def get_contours(image : Image.Image, niteration : int, npoints : int, initial_guess_radius : float) -> list[tuple[int, int]]:
+def get_contours(
+image : Image.Image,
+niteration : int,
+npoints : int,
+initial_guess_radius : float) -> 'list[tuple[int, int]]':
     image = ImageOps.grayscale(image)
 
     center = (image.size[0]//2, image.size[1]//2)
@@ -73,21 +67,13 @@ def get_contours(image : Image.Image, niteration : int, npoints : int, initial_g
                 forcey[i,j] *= k/l
 
     v = [
-        ((center[0]+initial_guess_radius*cos(theta).real),
-        (center[1]+initial_guess_radius*sin(theta).real)) 
+        ((center[0]+initial_guess_radius*cos(theta)),
+        (center[1]+initial_guess_radius*sin(theta))) 
         for theta in np.linspace(0, 2*pi, npoints+1)
     ]
 
     for _ in range(niteration):
-        v = fuse(v)
-        v = reorder(v, center)
+        v = fusion(v)
         v = inflate(v, forcex, forcey)
 
     return [(int(x), int(y)) for x,y in v]
-
-print(get_contours(
-    Image.open("img.jpg"),
-    500,
-    10,
-    100
-))
