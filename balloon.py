@@ -1,11 +1,7 @@
 # IMPORTS #
-from PIL import Image, ImageOps, ImageDraw, ImageFilter
+from PIL import Image, ImageOps
 import numpy as np
 from math import cos, sin, pi
-
-import matplotlib.pyplot as plt
-
-import os, glob
 
 # CONSTANTES #
 k = .9
