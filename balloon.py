@@ -7,7 +7,7 @@ from math import cos, sin, pi
 k = .9
 k1 = .8
 
-def inflate(v, forcex, forcey):
+def gonfle(v, forcex, forcey):
     "Applique la force de gonflement à chaque point de la courbe"
     l = len(v)
     newv = l*[(0,0)]
@@ -70,6 +70,6 @@ initial_guess_radius : float) -> 'list[tuple[int, int]]':
 
     for _ in range(niteration):
         v = fusion(v)
-        v = inflate(v, forcex, forcey)
+        v = gonfle(v, forcex, forcey)
 
     return [(int(x), int(y)) for x,y in v]
